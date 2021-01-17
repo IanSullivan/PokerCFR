@@ -27,17 +27,18 @@ class Kunh:
             if self.iters == n_iterations//2:
                 for _, v in self.nodeMap.items():
                     v.strategy_sum = np.zeros(v.n_actions)
+                    expected_game_value = 0
             for j in range(2):
                 self.current_player = j
                 shuffle(self.deck)
-                expected_game_value += self.cfr('', 1, 1)
-                for _, v in self.nodeMap.items():
-                    v.update_strategy()
-
+                expected_game_value += self.cfr('', 1, 1, 1)
+                # for _, v in self.nodeMap.items():
+                #     v.update_strategy()
+        print(self.iters)
         expected_game_value /= n_iterations
         display_results(expected_game_value, self.nodeMap)
 
-    def cfr(self, history, pr_1, pr_2):
+    def cfr(self, history, pr_1, pr_2, sample_prob):
         n = len(history)
         player = n % 2
         player_card = self.deck[0] if player == 0 else self.deck[1]
@@ -53,36 +54,44 @@ class Kunh:
 
         # Counterfactual utility per action.
         action_utils = np.zeros(self.n_actions)
-        if player != self.current_player:
+        if player == self.current_player:
+        # if player != 222:
             if player == 0:
                 node.reach_pr += pr_1
             else:
                 node.reach_pr += pr_2
             for act in range(self.n_actions):
-                if strategy[act] > 0.001 or self.iters < 10000:
+
+                p = node.get_p(act)
+                random.random()
+                if random.random() > p:
+                    print(node.strategy_sum[act], p)
+                    action_utils[act] = 0
+                else:
                     next_history = history + node.action_dict[act]
+                    # print(strategy[act])
                     if player == 0:
-                        action_utils[act] = -1 * self.cfr(next_history, pr_1 * strategy[act], pr_2)
+                        action_utils[act] = -1 * self.cfr(next_history, pr_1 * strategy[act], pr_2, sample_prob * p)
                     else:
-                        action_utils[act] = -1 * self.cfr(next_history, pr_1, pr_2 * strategy[act])
-                # else:
-                #     print(strategy[act])
+                        action_utils[act] = -1 * self.cfr(next_history, pr_1, pr_2 * strategy[act], sample_prob * p)
 
             # Utility of information set.
             util = np.sum(action_utils * strategy)
             regrets = action_utils - util
             regrets = (pr_2 if player == 0 else pr_1) * regrets
             node.regret_sum += regrets
+            node.update_strategy()
         else:
             #  second player, no regrets are calculated only one branch is explore, Monte Carlo
-            p = random.random()
             # at random probability take the greedy path other wise explore based on the strategy
-            if p < 0.3 and self.iters > 10000:
-                a = np.argmax(node.regret_sum)
-            else:
-                a = node.get_action(strategy)
+            # if p > 0.7 and self.iters > 1000:
+            #     a = np.argmax(node.regret_sum)
+            # else:
+                # avg_strat = node.get_average_strategy()
+                # a = node.get_action(avg_strat)
+            a = node.get_action(strategy)
             next_history = history + node.action_dict[a]
-            util = -1 * self.cfr(next_history, pr_1, pr_2)
+            util = -1 * self.cfr(next_history, pr_1, pr_2, sample_prob)
         return util
 
     @staticmethod
@@ -143,6 +152,20 @@ class Node:
         else:
             strategy = np.repeat(1/self.n_actions, self.n_actions)
         return strategy
+
+    def get_p(self, act):
+
+        if self.reach_pr_sum != 0:
+            strategy = self.strategy_sum / self.reach_pr_sum
+        else:
+            strategy = self.strategy_sum
+
+        normalizing_sum = np.sum(strategy)
+        if normalizing_sum > 0:
+            strategy = (1000 + strategy) / (1000 + normalizing_sum)
+        else:
+            strategy = np.repeat(1 / self.n_actions, self.n_actions)
+        return max(strategy[act], 0.05)
 
     def get_action(self, strategy):
         return choice(self.possible_actions, p=strategy)
