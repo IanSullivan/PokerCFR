@@ -84,11 +84,6 @@ class Kunh:
         else:
             #  second player, no regrets are calculated only one branch is explore, Monte Carlo
             # at random probability take the greedy path other wise explore based on the strategy
-            # if p > 0.7 and self.iters > 1000:
-            #     a = np.argmax(node.regret_sum)
-            # else:
-                # avg_strat = node.get_average_strategy()
-                # a = node.get_action(avg_strat)
             a = node.get_action(strategy)
             next_history = history + node.action_dict[a]
             util = -1 * self.cfr(next_history, pr_1, pr_2, sample_prob)
