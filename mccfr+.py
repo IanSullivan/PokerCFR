@@ -132,6 +132,9 @@ class Node:
         self.reach_pr = 0
         self.reach_pr_sum = 0
 
+        self.beta = 1000
+        self.epsilon = 0.05
+
     def update_strategy(self):
         self.strategy_sum += self.reach_pr * self.strategy
         self.reach_pr_sum += self.reach_pr
@@ -157,10 +160,10 @@ class Node:
 
         normalizing_sum = np.sum(strategy)
         if normalizing_sum > 0:
-            strategy = (1000 + strategy) / (1000 + normalizing_sum)
+            strategy = (self.beta + strategy) / (self.beta + normalizing_sum)
         else:
-            strategy = np.repeat(1 / self.n_actions, self.n_actions)
-        return max(strategy[act], 0.05)
+            strategy = np.repeat((1 + self.beta) / (self.beta + self.n_actions), self.n_actions)
+        return max(strategy[act], self.epsilon)
 
     def get_action(self, strategy):
         return choice(self.possible_actions, p=strategy)
