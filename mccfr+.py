@@ -19,7 +19,6 @@ class Kunh:
         self.iters = 0
 
     def train(self, n_iterations=10000):
-        # i_map = {}  # map of information sets
         expected_game_value = 0
         for _ in range(n_iterations):
             self.iters += 1
@@ -32,8 +31,6 @@ class Kunh:
                 self.current_player = j
                 shuffle(self.deck)
                 expected_game_value += self.cfr('', 1, 1, 1)
-                # for _, v in self.nodeMap.items():
-                #     v.update_strategy()
         print(self.iters)
         expected_game_value /= n_iterations
         display_results(expected_game_value, self.nodeMap)
@@ -52,24 +49,21 @@ class Kunh:
         node = self.get_node(player_card, history)
         strategy = node.strategy
 
-        # Counterfactual utility per action.
         action_utils = np.zeros(self.n_actions)
         if player == self.current_player:
-        # if player != 222:
             if player == 0:
                 node.reach_pr += pr_1
             else:
                 node.reach_pr += pr_2
+            # Counterfactual utility per action.
             for act in range(self.n_actions):
 
                 p = node.get_p(act)
                 random.random()
                 if random.random() > p:
-                    print(node.strategy_sum[act], p)
                     action_utils[act] = 0
                 else:
                     next_history = history + node.action_dict[act]
-                    # print(strategy[act])
                     if player == 0:
                         action_utils[act] = -1 * self.cfr(next_history, pr_1 * strategy[act], pr_2, sample_prob * p)
                     else:
@@ -82,8 +76,7 @@ class Kunh:
             node.regret_sum += regrets
             node.update_strategy()
         else:
-            #  second player, no regrets are calculated only one branch is explore, Monte Carlo
-            # at random probability take the greedy path other wise explore based on the strategy
+            #  second player, no regrets are calculated, only one branch is explore,
             a = node.get_action(strategy)
             next_history = history + node.action_dict[a]
             util = -1 * self.cfr(next_history, pr_1, pr_2, sample_prob)
@@ -142,6 +135,7 @@ class Node:
         self.reach_pr = 0
 
     def get_strategy(self):
+        #  regrets are set to zero in cfr+         
         self.regret_sum[self.regret_sum < 0] = 0
         normalizing_sum = sum(self.regret_sum)
         strategy = self.regret_sum
@@ -150,9 +144,17 @@ class Node:
         else:
             strategy = np.repeat(1/self.n_actions, self.n_actions)
         return strategy
-
+    
+    
+    #  Takes in the action played at the node, and returns the likelihood it will be explored.       
+    #  Epsilon is the minimum possible percentage that the action will be taken.  Epsilon is 0.05 or 5% here.  So at the very least the information set will seen
+    #  5% of the time
+    #  Beta is a normalizing hyperparam to make sure that early in the training cycle actions are still explored.  Beta is 1000 here.  So for example if the values
+    #  are 0 out of ten, instead of given an answer of 0 in the early iterations it will return a value of .99 or { (0 + beta)/10 + beta), (1000/1010) }.  Later in the 
+    #  training beta should become negligable, example would be 60000/80000 = 0.75, with beta is would be 61000/81000 = 0.753.  The beta param has little impact on the 
+    #  final answer at the end of training       
     def get_p(self, act):
-
+        
         if self.reach_pr_sum != 0:
             strategy = self.strategy_sum / self.reach_pr_sum
         else:
