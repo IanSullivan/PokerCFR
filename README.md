@@ -22,6 +22,7 @@ https://www.cs.cmu.edu/~noamb/papers/14-AAAI-Regret.pdf </br>
 ##### Subgame solving: </br>
 https://poker.cs.ualberta.ca/publications/aaai2014-cfrd.pdf </br>
 https://dl.acm.org/doi/10.5555/3015812.3015898 </br>
+https://poker.cs.ualberta.ca/publications/NIPS09-graft.pdf </br>
 
 
 
