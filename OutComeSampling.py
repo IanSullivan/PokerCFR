@@ -13,6 +13,7 @@ class Kunh:
         self.deck = np.array([0, 1, 2])
         self.n_actions = 2
         self.current_player = 0
+#         Exploration parameter
         self.epsilon = 0.14
 
     def train(self, n_iterations=10000):
@@ -38,6 +39,7 @@ class Kunh:
             card_opponent = self.deck[1] if player == 0 else self.deck[0]
             reward = self.get_reward(history, player_card, card_opponent)
             return reward / sample_reach, 1
+        
         node = self.get_node(player_card, history)
         strategy = node.get_strategy()
         if player == self.current_player:
@@ -45,6 +47,7 @@ class Kunh:
             probability = self.sample_strategy(strategy)
         else:
             probability = node.strategy
+            
         act = node.get_action(probability)
         next_history = history + node.action_dict[act]
         if player == 0:
