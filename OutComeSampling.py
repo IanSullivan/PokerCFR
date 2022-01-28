@@ -72,15 +72,7 @@ class Kunh:
             strategy[i] = (self.epsilon * np.repeat(1 / self.n_actions, self.n_actions)[i] +
                            (1 - self.epsilon) * strategy[i])
         return strategy
-
-    @staticmethod
-    def base_line_child_value(a, sampled_action, value, sample_prob):
-        baseline = 0
-        if a == sampled_action:
-            return baseline + (value - baseline) / sample_prob
-        else:
-            return baseline
-
+    
     @staticmethod
     def is_terminal(history):
         if history[-2:] == 'pp' or history[-2:] == "bb" or history[-2:] == 'bp':
