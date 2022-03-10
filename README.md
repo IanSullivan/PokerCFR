@@ -41,3 +41,9 @@ https://www.cs.cmu.edu/~noamb/papers/14-AAAI-Regret.pdf </br>
 https://poker.cs.ualberta.ca/publications/aaai2014-cfrd.pdf </br>
 https://dl.acm.org/doi/10.5555/3015812.3015898 </br>
 https://poker.cs.ualberta.ca/publications/NIPS09-graft.pdf </br>
+
+##### Evaluating: </br>
+https://poker.cs.ualberta.ca/publications/kan.msc.pdf </br>
+http://poker.cs.ualberta.ca/publications/aaai17ws-burch-aivat.pdf </br>
+https://poker.cs.ualberta.ca/publications/jdavidson.msc.pdf </br>
+
